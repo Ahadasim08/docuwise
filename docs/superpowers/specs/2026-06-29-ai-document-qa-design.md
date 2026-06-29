@@ -1,7 +1,7 @@
 # AI-Powered Document Q&A Web App — Design Spec
 
 **Date:** 2026-06-29
-**Author:** Aahad Khan
+**Author:** Ahad Asim 
 **Context:** Upwork client deliverable + personal portfolio piece (GitHub + LinkedIn).
 
 ---
