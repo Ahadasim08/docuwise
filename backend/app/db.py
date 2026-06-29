@@ -196,3 +196,25 @@ def session_document_ids(session_id: str) -> list[str]:
         .data
     )
     return [r["document_id"] for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Additional document helpers
+# ---------------------------------------------------------------------------
+
+def delete_document(doc_id: str) -> None:
+    """Delete a document row (cascades to chunks via FK)."""
+    _get_client().table("documents").delete().eq("id", doc_id).execute()
+
+
+def get_document_chunks(doc_id: str) -> list[dict]:
+    """Return all chunks for a document (content only; no embeddings)."""
+    return (
+        _get_client()
+        .table("chunks")
+        .select("id,content,page_number,section,chunk_index")
+        .eq("document_id", doc_id)
+        .order("chunk_index", desc=False)
+        .execute()
+        .data
+    )
