@@ -31,6 +31,14 @@ class FakeTable:
             self._store.append(row)
         return self
 
+    # upsert — accepts a single dict or a list of dicts with on_conflict parameter
+    def upsert(self, row, on_conflict=None):
+        if isinstance(row, list):
+            self._store.extend(row)
+        else:
+            self._store.append(row)
+        return self
+
     # update
     def update(self, data):
         self._updated = data

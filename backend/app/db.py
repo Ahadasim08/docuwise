@@ -134,7 +134,7 @@ def get_session(session_id: str) -> dict:
         .execute()
         .data
     )
-    return result[0]
+    return result[0] if result else None
 
 
 # ---------------------------------------------------------------------------
@@ -175,14 +175,14 @@ def get_messages(session_id: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def attach_documents(session_id: str, document_ids: list[str]) -> None:
-    """Link documents to a session (upsert-safe: inserts one row per doc)."""
+    """Link documents to a session."""
     if not document_ids:
         return
     rows = [
         {"session_id": session_id, "document_id": doc_id}
         for doc_id in document_ids
     ]
-    _get_client().table("session_documents").insert(rows).execute()
+    _get_client().table("session_documents").upsert(rows, on_conflict="session_id,document_id").execute()
 
 
 def session_document_ids(session_id: str) -> list[str]:
