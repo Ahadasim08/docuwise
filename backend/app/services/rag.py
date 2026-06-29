@@ -43,6 +43,7 @@ def _citations(chunks: list[dict]) -> list[dict]:
             "document_id": c["document_id"],
             "page_number": c.get("page_number"),
             "section": c.get("section"),
+            "content": c.get("content"),
         }
         for c in chunks
     ]

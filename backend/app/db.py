@@ -124,7 +124,7 @@ def list_sessions() -> list[dict]:
     )
 
 
-def get_session(session_id: str) -> dict:
+def get_session(session_id: str) -> dict | None:
     """Fetch a single session by ID. Returns the row dict."""
     result = (
         _get_client()

@@ -58,10 +58,10 @@ class Citation(BaseModel):
     """A single source citation attached to an AI answer."""
 
     document_id: UUID
-    filename: str
+    filename: str | None = None
     page_number: int | None = None
     section: str | None = None
-    content: str  # the verbatim chunk text used as evidence
+    content: str | None = None  # the verbatim chunk text used as evidence
     similarity: float | None = None
 
 
