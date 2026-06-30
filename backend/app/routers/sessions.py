@@ -1,4 +1,5 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -7,6 +8,8 @@ from app import db
 from app.auth import require_user
 from app.models import AskRequest, AttachDocumentsRequest, SessionCreate
 from app.services import rag
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -66,9 +69,15 @@ def ask(
 
     def event_stream():
         tokens = []
-        for token in token_iter:
-            tokens.append(token)
-            yield f"data: {json.dumps({'token': token})}\n\n"
+        try:
+            for token in token_iter:
+                tokens.append(token)
+                yield f"data: {json.dumps({'token': token})}\n\n"
+        except Exception as exc:
+            logger.exception("LLM stream error: %s", exc)
+            error_msg = f"LLM error: {exc}"
+            tokens.append(error_msg)
+            yield f"data: {json.dumps({'token': error_msg})}\n\n"
         full_answer = "".join(tokens)
         msg = db.insert_message(session_id, "assistant", full_answer, citations)
         yield f"data: {json.dumps({'done': True, 'message_id': str(msg['id']), 'citations': citations})}\n\n"
