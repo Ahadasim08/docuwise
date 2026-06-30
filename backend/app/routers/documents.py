@@ -44,7 +44,7 @@ def _process_document(doc_id: str, data: bytes, ext: str) -> None:
                     "section": page.get("section"),
                     "chunk_index": i,
                     "token_count": len(text.split()),
-                    "embedding": vec,
+                    "embedding": "[" + ",".join(str(v) for v in vec) + "]",
                 })
         db.insert_chunks(rows)
         db.set_document_status(doc_id, "ready")

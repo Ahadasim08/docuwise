@@ -92,7 +92,7 @@ def match_chunks(
         .rpc(
             "match_chunks",
             {
-                "query_embedding": query_embedding,
+                "query_embedding": "[" + ",".join(str(v) for v in query_embedding) + "]",
                 "doc_ids": document_ids,
                 "match_count": top_k,
             },
