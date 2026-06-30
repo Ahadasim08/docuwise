@@ -27,6 +27,7 @@ export default function SessionDrawer({
             uploading={uploading}
             onUpload={onUpload}
             onRequestSummary={onRequestSummary}
+            token={token}
           />
         </div>
       </SheetContent>
