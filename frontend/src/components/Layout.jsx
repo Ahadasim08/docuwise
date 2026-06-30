@@ -48,7 +48,7 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col">
+      <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-hidden">
         {/* Brand */}
         <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border shrink-0">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
@@ -80,7 +80,7 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
         </div>
 
         {/* Session list — scrollable middle */}
-        <div className="flex-1 overflow-y-auto px-2 pb-2">
+        <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
           <p className="text-[10px] text-muted-foreground/50 px-2 py-1 uppercase tracking-wider">
             Sessions
           </p>
