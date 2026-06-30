@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ArrowUp, Paperclip } from "lucide-react";
+import { ArrowUp, Paperclip, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -37,7 +37,13 @@ export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
   };
 
   return (
-    <div className="flex gap-2 items-end border border-border bg-card rounded-lg px-3 py-2.5 transition-colors focus-within:border-primary/40">
+    <div className="flex flex-col border border-border bg-card rounded-lg overflow-hidden transition-colors focus-within:border-primary/40">
+      {uploading && (
+        <div className="h-0.5 w-full bg-muted overflow-hidden">
+          <div className="h-full w-2/5 bg-primary animate-upload-bar" />
+        </div>
+      )}
+      <div className="flex gap-2 items-end px-3 py-2.5">
       {onUpload && (
         <>
           <button
@@ -47,7 +53,9 @@ export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
             className="shrink-0 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 mb-0.5"
             title="Upload document"
           >
-            <Paperclip className="h-4 w-4" />
+            {uploading
+              ? <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              : <Paperclip className="h-4 w-4" />}
           </button>
           <input
             ref={fileRef}
@@ -77,6 +85,7 @@ export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
       >
         <ArrowUp className="h-3.5 w-3.5" />
       </Button>
+      </div>
     </div>
   );
 }

@@ -46,6 +46,10 @@ def _process_document(doc_id: str, data: bytes, ext: str) -> None:
                     "token_count": len(text.split()),
                     "embedding": "[" + ",".join(str(v) for v in vec) + "]",
                 })
+        if not rows:
+            db.set_document_status(doc_id, "error", "No text extracted — file may be a scanned/image PDF or empty.")
+            logger.warning("Document %s yielded 0 chunks — marked error", doc_id)
+            return
         db.insert_chunks(rows)
         db.set_document_status(doc_id, "ready")
         logger.info("Document %s processed — %d chunks stored", doc_id, len(rows))
