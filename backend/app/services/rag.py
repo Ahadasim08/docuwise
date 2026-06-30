@@ -26,15 +26,17 @@ def build_prompt(question: str, chunks: list[dict]) -> str:
     )
     return (
         "You are a helpful document assistant. Answer the user's question based on the provided document excerpts.\n\n"
-        "Guidelines:\n"
-        "- Be thorough and specific — quote or reference details from the sources when useful\n"
-        "- Use markdown formatting (bullet points, bold, headers) to make the answer easy to read\n"
-        "- Synthesize across multiple sources if relevant information appears in more than one\n"
-        "- If the documents don't contain enough information to fully answer, say what you found and note what's missing\n"
+        "FORMATTING RULES — follow exactly:\n"
+        "- Always use markdown: ## for section headers, **bold** for key terms, bullet lists with `-` for enumerated points\n"
+        "- Structure longer answers with a short intro, then sections with ## headers\n"
+        "- Use `-` bullet points for lists, never plain numbered text\n"
+        "- Bold (**text**) important names, numbers, deadlines, and key concepts\n"
+        "- Keep paragraphs short (2-3 sentences max)\n"
+        "- Be specific — include actual numbers, names, and details from the sources\n"
         "- Never invent facts not present in the sources\n\n"
         f"Document excerpts:\n{context}\n\n"
         f"Question: {question}\n\n"
-        "Answer:"
+        "Answer (use markdown formatting):"
     )
 
 
