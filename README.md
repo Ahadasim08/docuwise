@@ -161,9 +161,10 @@ See `render.yaml` for the full config. Quick steps:
 
 | File | Content |
 |------|---------|
+| `engineering_handbook.pdf` | Fictional engineering handbook (5 sections) |
+| `product_overview.docx` | Fictional product overview with pricing and roadmap |
 | `company_handbook.csv` | Fictional company policy FAQ |
-| `product_overview.txt` | Converted to PDF for upload demo (see `scripts/make_samples.py`) |
-| `q3_report.csv` | Fictional quarterly financials |
+| `q3_financial_report.csv` | Fictional Q3 financial metrics |
 
 To pre-populate a live demo:
 ```bash
