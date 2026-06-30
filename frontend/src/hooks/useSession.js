@@ -46,11 +46,13 @@ export function useSession(sessionId, token) {
       });
 
       if (!res.ok) {
-        const err = await res.text();
+        const raw = await res.text();
+        let errMsg = raw;
+        try { errMsg = JSON.parse(raw).detail || raw; } catch {}
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantId
-              ? { ...m, content: `Error: ${err}`, streaming: false }
+              ? { ...m, content: errMsg, streaming: false }
               : m
           )
         );
@@ -59,23 +61,43 @@ export function useSession(sessionId, token) {
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let accumulated = "";
+      let buffer = "";
+      let answer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        accumulated += chunk;
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId ? { ...m, content: accumulated } : m
-          )
-        );
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const payload = JSON.parse(line.slice(6));
+            if (payload.token) {
+              answer += payload.token;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId ? { ...m, content: answer } : m
+                )
+              );
+            } else if (payload.done) {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, citations: payload.citations || [], streaming: false }
+                    : m
+                )
+              );
+            }
+          } catch {}
+        }
       }
 
+      // Ensure streaming flag cleared even if done event was missing
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === assistantId ? { ...m, streaming: false } : m
+          m.id === assistantId && m.streaming ? { ...m, streaming: false } : m
         )
       );
     } finally {

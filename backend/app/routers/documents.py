@@ -1,7 +1,8 @@
 import os
 import tempfile
+import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 
 from app import db
 from app.auth import require_user
@@ -18,24 +19,7 @@ def _ext(filename: str) -> str:
     return filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
 
 
-@router.post("/upload")
-def upload_document(file: UploadFile = File(...), _user: dict = Depends(require_user)):
-    ext = _ext(file.filename or "")
-    if ext not in ALLOWED:
-        raise HTTPException(400, f"File type '{ext}' not allowed. Use pdf, docx, or csv.")
-
-    data = file.file.read()
-    if not data:
-        raise HTTPException(400, "Empty file rejected.")
-    if len(data) > MAX_SIZE:
-        raise HTTPException(400, "File exceeds 20 MB limit.")
-
-    storage_path = f"documents/{file.filename}"
-    db._get_client().storage.from_("documents").upload(storage_path, data)
-
-    doc = db.insert_document(file.filename, ext, len(data), storage_path)
-    doc_id = doc["id"]
-
+def _process_document(doc_id: str, data: bytes, ext: str) -> None:
     try:
         with tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False) as tmp:
             tmp.write(data)
@@ -63,14 +47,46 @@ def upload_document(file: UploadFile = File(...), _user: dict = Depends(require_
         db.set_document_status(doc_id, "ready")
     except Exception as exc:
         db.set_document_status(doc_id, "error", str(exc))
-        raise HTTPException(500, f"Processing failed: {exc}")
 
-    return {"document_id": doc_id, "filename": file.filename, "status": "ready"}
+
+@router.post("/upload", status_code=202)
+def upload_document(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    _user: dict = Depends(require_user),
+):
+    ext = _ext(file.filename or "")
+    if ext not in ALLOWED:
+        raise HTTPException(400, f"File type '{ext}' not allowed. Use pdf, docx, or csv.")
+
+    data = file.file.read()
+    if not data:
+        raise HTTPException(400, "Empty file rejected.")
+    if len(data) > MAX_SIZE:
+        raise HTTPException(400, "File exceeds 20 MB limit.")
+
+    storage_path = f"documents/{uuid.uuid4()}_{file.filename}"
+    db._get_client().storage.from_("documents").upload(storage_path, data)
+
+    doc = db.insert_document(file.filename, ext, len(data), storage_path)
+    doc_id = doc["id"]
+
+    background_tasks.add_task(_process_document, doc_id, data, ext)
+
+    return {"document_id": doc_id, "filename": file.filename, "status": "processing"}
 
 
 @router.get("/documents")
 def list_documents(_user: dict = Depends(require_user)):
     return db.list_documents()
+
+
+@router.get("/documents/{doc_id}")
+def get_document(doc_id: str, _user: dict = Depends(require_user)):
+    doc = db.get_document(doc_id)
+    if not doc:
+        raise HTTPException(404, "Document not found.")
+    return doc
 
 
 @router.delete("/documents/{doc_id}", status_code=204)

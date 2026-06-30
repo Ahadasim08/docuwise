@@ -70,6 +70,6 @@ def ask(
             yield f"data: {json.dumps({'token': token})}\n\n"
         full_answer = "".join(tokens)
         msg = db.insert_message(session_id, "assistant", full_answer, citations)
-        yield f"data: {json.dumps({'done': True, 'message_id': str(msg['id'])})}\n\n"
+        yield f"data: {json.dumps({'done': True, 'message_id': str(msg['id']), 'citations': citations})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

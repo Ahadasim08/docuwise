@@ -6,18 +6,35 @@ import EmptyState from "./EmptyState";
 import ChatView from "./ChatView";
 import { useSessions } from "../hooks/useSessions";
 import { useDocuments } from "../hooks/useDocuments";
+import { apiFetch } from "../api/client";
 
 export default function Layout({ token, currentSessionId, onSessionSelect, onSignOut }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { sessions, createSession } = useSessions(token);
   const { documents, uploading, uploadFile, requestSummary } = useDocuments(token);
 
+  const uploadAndAttach = async (file) => {
+    const docId = await uploadFile(file);
+    if (docId && currentSessionId) {
+      await apiFetch(
+        `/sessions/${currentSessionId}/documents`,
+        { method: "POST", body: JSON.stringify({ document_ids: [docId] }) },
+        token
+      );
+    }
+  };
+
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
   const handleNewSession = async () => {
-    const s = await createSession("New session");
-    onSessionSelect(s.id);
-    setDrawerOpen(false);
+    try {
+      const s = await createSession("New session");
+      onSessionSelect(s.id);
+      setDrawerOpen(false);
+    } catch (err) {
+      console.error("createSession failed:", err);
+      alert(`Could not create session: ${err.message}`);
+    }
   };
 
   return (
@@ -42,7 +59,7 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
       />
       <main className="flex-1 flex flex-col">
         {currentSessionId ? (
-          <ChatView sessionId={currentSessionId} token={token} documents={documents} />
+          <ChatView sessionId={currentSessionId} token={token} documents={documents} onUpload={uploadAndAttach} uploading={uploading} />
         ) : (
           <EmptyState onNewSession={handleNewSession} />
         )}

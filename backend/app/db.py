@@ -202,6 +202,12 @@ def session_document_ids(session_id: str) -> list[str]:
 # Additional document helpers
 # ---------------------------------------------------------------------------
 
+def get_document(doc_id: str) -> dict | None:
+    """Fetch a single document row by ID."""
+    result = _get_client().table("documents").select("*").eq("id", doc_id).execute().data
+    return result[0] if result else None
+
+
 def delete_document(doc_id: str) -> None:
     """Delete a document row (cascades to chunks via FK)."""
     _get_client().table("documents").delete().eq("id", doc_id).execute()
