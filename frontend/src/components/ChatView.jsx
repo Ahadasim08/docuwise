@@ -76,13 +76,13 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
           <div className="rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/40">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                Sources · {selectedDocIds.length}/{sessionDocs.length} active
+              <span className="text-xs font-medium text-muted-foreground/60">
+                {selectedDocIds.length}/{sessionDocs.length} sources active
               </span>
               {sessionDocs.length > 1 && (
                 <button
                   onClick={() => setSelectedDocIds(allSelected ? [] : sessionDocs.map((d) => d.id))}
-                  className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
                   {allSelected ? "Deselect all" : "Select all"}
                 </button>
@@ -109,7 +109,7 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
                     <span className={cn("shrink-0", active ? "text-primary" : "text-muted-foreground/30")}>
                       <DocIcon ext={ext} />
                     </span>
-                    <span className={cn("text-[11px] font-medium truncate", !active && "line-through decoration-muted-foreground/30")}>
+                    <span className="text-[11px] font-medium truncate">
                       {shortName(d.filename)}
                     </span>
                     <span className={cn(
