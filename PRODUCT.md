@@ -1,9 +1,4 @@
-
 # Product
-
-## Register
-
-product
 
 ## Users
 
