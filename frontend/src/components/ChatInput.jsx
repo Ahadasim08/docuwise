@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
   const [value, setValue] = useState("");
+  const [uploadError, setUploadError] = useState("");
   const textRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -26,17 +27,22 @@ export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (file && onUpload) {
+      setUploadError("");
       try {
         await onUpload(file);
       } catch (err) {
         console.error("Upload failed:", err);
-        alert(`Upload failed: ${err.message}`);
+        setUploadError(err.message || "Upload failed");
       }
     }
     e.target.value = "";
   };
 
   return (
+    <div className="flex flex-col gap-1.5">
+      {uploadError && (
+        <p className="text-xs text-destructive px-1">{uploadError}</p>
+      )}
     <div className="flex flex-col border border-border bg-card rounded-lg overflow-hidden transition-colors focus-within:border-primary/40">
       {uploading && (
         <div className="h-0.5 w-full bg-muted overflow-hidden">
@@ -86,6 +92,7 @@ export default function ChatInput({ onSend, disabled, onUpload, uploading }) {
         <ArrowUp className="h-3.5 w-3.5" />
       </Button>
       </div>
+    </div>
     </div>
   );
 }
