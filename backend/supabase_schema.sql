@@ -21,7 +21,8 @@ create table chunks (
   token_count int,
   embedding vector(384)
 );
-create index on chunks using ivfflat (embedding vector_cosine_ops) with (lists = 100);
+-- HNSW index — accurate at all scales, no tuning needed
+create index on chunks using hnsw (embedding vector_cosine_ops);
 
 create table sessions (
   id uuid primary key default gen_random_uuid(),
@@ -49,11 +50,16 @@ create or replace function match_chunks(
   query_embedding vector(384), doc_ids uuid[], match_count int)
 returns table (id uuid, document_id uuid, content text,
                page_number int, section text, similarity float)
-language sql stable as $$
-  select c.id, c.document_id, c.content, c.page_number, c.section,
-         1 - (c.embedding <=> query_embedding) as similarity
-  from chunks c
-  where c.document_id = any(doc_ids)
-  order by c.embedding <=> query_embedding
-  limit match_count;
+language plpgsql stable as $$
+begin
+  -- Force sequential scan so small datasets are never missed by the index
+  set local enable_indexscan = off;
+  return query
+    select c.id, c.document_id, c.content, c.page_number, c.section,
+           1 - (c.embedding <=> query_embedding) as similarity
+    from chunks c
+    where c.document_id = any(doc_ids)
+    order by c.embedding <=> query_embedding
+    limit match_count;
+end;
 $$;
