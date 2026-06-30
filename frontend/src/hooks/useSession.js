@@ -26,7 +26,7 @@ export function useSession(sessionId, token) {
     fetchSession().catch(console.error);
   }, [fetchSession]);
 
-  const sendQuestion = async (question) => {
+  const sendQuestion = async (question, docIds = null) => {
     const userId = crypto.randomUUID();
     const assistantId = crypto.randomUUID();
 
@@ -44,7 +44,7 @@ export function useSession(sessionId, token) {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, ...(docIds ? { document_ids: docIds } : {}) }),
       });
 
       if (!res.ok) {

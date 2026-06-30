@@ -6,7 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from app import db
 from app.auth import require_user
-from app.models import AskRequest, AttachDocumentsRequest, SessionCreate
+from app.models import AskRequest, AttachDocumentsRequest, SessionCreate, SessionUpdate
 from app.services import rag
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,11 @@ def get_session(session_id: str, _user: dict = Depends(require_user)):
     messages = db.get_messages(session_id)
     document_ids = db.session_document_ids(session_id)
     return {**session, "messages": messages, "document_ids": document_ids}
+
+
+@router.patch("/sessions/{session_id}")
+def update_session(session_id: str, body: SessionUpdate, _user: dict = Depends(require_user)):
+    return db.update_session_title(session_id, body.title)
 
 
 @router.post("/sessions/{session_id}/documents")

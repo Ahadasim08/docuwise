@@ -41,6 +41,10 @@ class SessionCreate(BaseModel):
     title: str = Field(default="New session", min_length=1, max_length=200)
 
 
+class SessionUpdate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+
+
 class SessionOut(BaseModel):
     """A chat session returned from the API."""
 

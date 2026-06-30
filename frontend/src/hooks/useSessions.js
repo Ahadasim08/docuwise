@@ -25,5 +25,13 @@ export function useSessions(token) {
     return session;
   }, [token, fetchSessions]);
 
-  return { sessions, createSession };
+  const renameSession = useCallback(async (sessionId, title) => {
+    await apiFetch(`/sessions/${sessionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ title }),
+    }, token);
+    await fetchSessions().catch(console.error);
+  }, [token, fetchSessions]);
+
+  return { sessions, createSession, renameSession };
 }

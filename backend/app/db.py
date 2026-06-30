@@ -112,6 +112,11 @@ def create_session(title: str) -> dict:
     return _get_client().table("sessions").insert(row).execute().data[0]
 
 
+def update_session_title(session_id: str, title: str) -> dict:
+    result = _get_client().table("sessions").update({"title": title}).eq("id", session_id).execute()
+    return result.data[0] if result.data else {}
+
+
 def list_sessions() -> list[dict]:
     """Return all sessions ordered by most recently updated."""
     return (
