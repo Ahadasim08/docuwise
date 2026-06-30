@@ -11,11 +11,10 @@ export function useDocuments(token) {
   const fetchDocuments = useCallback(async () => {
     if (!token) return;
     const res = await apiFetch("/documents", {}, token);
-    if (!res.ok) throw new Error(await res.text());
     setDocuments(await res.json());
   }, [token]);
 
-  useEffect(() => { fetchDocuments(); }, [fetchDocuments]);
+  useEffect(() => { fetchDocuments().catch(console.error); }, [fetchDocuments]);
 
   const uploadFile = async (file) => {
     setUploading(true);

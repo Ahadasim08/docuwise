@@ -21,12 +21,12 @@ export function useSession(sessionId, token) {
 
   useEffect(() => {
     setMessages([]);
-    fetchSession();
+    fetchSession().catch(console.error);
   }, [fetchSession]);
 
   const sendQuestion = async (question) => {
-    const userId = `user-${Date.now()}`;
-    const assistantId = `assistant-${Date.now() + 1}`;
+    const userId = crypto.randomUUID();
+    const assistantId = crypto.randomUUID();
 
     setMessages((prev) => [
       ...prev,

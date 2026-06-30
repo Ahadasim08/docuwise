@@ -17,7 +17,7 @@ export default function SummaryDialog({ open, onClose, docName, onFetchSummary }
       .then((s) => setSummary(s))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [open]);
+  }, [open, onFetchSummary]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

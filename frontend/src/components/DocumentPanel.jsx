@@ -25,10 +25,14 @@ export default function DocumentPanel({ documents, uploading, onUpload, onReques
     return true;
   };
 
-  const handleFiles = (files) => {
+  const handleFiles = async (files) => {
     const file = files[0];
     if (!file || !validate(file)) return;
-    onUpload(file);
+    try {
+      await onUpload(file);
+    } catch (e) {
+      setError(e.message || "Upload failed.");
+    }
   };
 
   const handleDrop = (e) => {

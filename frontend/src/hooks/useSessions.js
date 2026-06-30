@@ -19,6 +19,7 @@ export function useSessions(token) {
       method: "POST",
       body: JSON.stringify({ title }),
     }, token);
+    if (!res.ok) throw new Error(await res.text());
     const session = await res.json();
     await fetchSessions();
     return session;

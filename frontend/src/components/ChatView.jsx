@@ -5,7 +5,7 @@ import ChatInput from "./ChatInput";
 import StreamingIndicator from "./StreamingIndicator";
 import { useSession } from "../hooks/useSession";
 
-export default function ChatView({ sessionId, token, documents }) {
+export default function ChatView({ sessionId, token, documents = [] }) {
   const { messages, streaming, sendQuestion } = useSession(sessionId, token);
   const bottomRef = useRef(null);
 
