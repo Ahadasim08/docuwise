@@ -33,12 +33,8 @@
 
 ### Remaining Manual Steps
 
-1. **Demo video** (Task 6.4) — record ~30s: login → upload → ask → streaming answer + citation → summary. Manual; add link to README when done.
-2. **GitHub push** — repo not yet on remote. One-time:
-   ```bash
-   git remote add origin https://github.com/<you>/docuwise.git
-   git push -u origin main --tags
-   ```
+1. **Demo video** (Task 6.4) — record ~30s using OpenScreen: login → upload → ask → streaming answer + citation → summary. Add link to README when done.
+2. ~~**GitHub push**~~ — ✅ done. `main` + `v1.0` tag live at `https://github.com/Ahadasim08/docuwise`
 3. **Render deploy** — create account → New Blueprint → connect repo → set env vars in dashboard → deploy → smoke-test `/health` + upload + question.
 4. **Update README** — add live demo URL and demo video link once deploy is done.
 
