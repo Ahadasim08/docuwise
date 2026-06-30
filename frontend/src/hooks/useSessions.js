@@ -33,5 +33,10 @@ export function useSessions(token) {
     await fetchSessions().catch(console.error);
   }, [token, fetchSessions]);
 
-  return { sessions, createSession, renameSession };
+  const deleteSession = useCallback(async (sessionId) => {
+    await apiFetch(`/sessions/${sessionId}`, { method: "DELETE" }, token);
+    await fetchSessions().catch(console.error);
+  }, [token, fetchSessions]);
+
+  return { sessions, createSession, renameSession, deleteSession };
 }

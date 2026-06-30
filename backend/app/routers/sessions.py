@@ -34,6 +34,11 @@ def get_session(session_id: str, _user: dict = Depends(require_user)):
     return {**session, "messages": messages, "document_ids": document_ids}
 
 
+@router.delete("/sessions/{session_id}", status_code=204)
+def delete_session(session_id: str, _user: dict = Depends(require_user)):
+    db.delete_session(session_id)
+
+
 @router.patch("/sessions/{session_id}")
 def update_session(session_id: str, body: SessionUpdate, _user: dict = Depends(require_user)):
     return db.update_session_title(session_id, body.title)

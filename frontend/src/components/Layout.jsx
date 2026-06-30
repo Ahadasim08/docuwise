@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Plus, MessageSquare, Loader2, FileSearch } from "lucide-react";
+import { LogOut, Plus, MessageSquare, Loader2, FileSearch, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import EmptyState from "./EmptyState";
@@ -9,7 +9,7 @@ import { useDocuments } from "../hooks/useDocuments";
 import { apiFetch } from "../api/client";
 
 export default function Layout({ token, currentSessionId, onSessionSelect, onSignOut }) {
-  const { sessions, createSession, renameSession } = useSessions(token);
+  const { sessions, createSession, renameSession, deleteSession } = useSessions(token);
   const { documents, uploading, uploadFile } = useDocuments(token);
   const [creating, setCreating] = useState(false);
   const [sessionError, setSessionError] = useState("");
@@ -86,19 +86,35 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
           </p>
           <div className="space-y-0.5">
             {sessions.map((s) => (
-              <button
+              <div
                 key={s.id}
-                onClick={() => onSessionSelect(s.id)}
                 className={cn(
-                  "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
+                  "group w-full flex items-center gap-1 rounded-md transition-colors",
                   s.id === currentSessionId
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{s.title}</span>
-              </button>
+                <button
+                  onClick={() => onSessionSelect(s.id)}
+                  className="flex-1 min-w-0 text-left px-2 py-1.5 text-sm flex items-center gap-2"
+                >
+                  <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{s.title}</span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteSession(s.id).then(() => {
+                      if (s.id === currentSessionId) onSessionSelect(null);
+                    }).catch(console.error);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 mr-1 rounded hover:text-destructive transition-all shrink-0"
+                  title="Delete session"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
             ))}
             {sessions.length === 0 && !creating && (
               <p className="text-xs text-muted-foreground px-2 py-2">No sessions yet</p>
