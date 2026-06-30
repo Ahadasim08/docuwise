@@ -22,7 +22,10 @@ export function useAuth() {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
 
+  const signUp = (email, password) =>
+    supabase.auth.signUp({ email, password });
+
   const signOut = () => supabase.auth.signOut();
 
-  return { session, loading, signIn, signOut };
+  return { session, loading, signIn, signUp, signOut };
 }

@@ -7,7 +7,7 @@ import Login from "./auth/Login";
 const Layout = lazy(() => import("./components/Layout"));
 
 export default function App() {
-  const { session, loading, signIn, signOut } = useAuth();
+  const { session, loading, signIn, signUp, signOut } = useAuth();
   const [currentSessionId, setCurrentSessionId] = useState(null);
 
   if (loading) {
@@ -18,7 +18,7 @@ export default function App() {
     );
   }
 
-  if (!session) return <Login onSignIn={signIn} />;
+  if (!session) return <Login onSignIn={signIn} onSignUp={signUp} />;
 
   return (
     <Suspense

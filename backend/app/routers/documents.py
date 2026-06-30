@@ -1,8 +1,11 @@
+import logging
 import os
 import tempfile
 import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
+
+logger = logging.getLogger(__name__)
 
 from app import db
 from app.auth import require_user
@@ -45,7 +48,9 @@ def _process_document(doc_id: str, data: bytes, ext: str) -> None:
                 })
         db.insert_chunks(rows)
         db.set_document_status(doc_id, "ready")
+        logger.info("Document %s processed — %d chunks stored", doc_id, len(rows))
     except Exception as exc:
+        logger.exception("Document %s processing failed: %s", doc_id, exc)
         db.set_document_status(doc_id, "error", str(exc))
 
 

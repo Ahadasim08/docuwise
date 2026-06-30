@@ -27,7 +27,8 @@ def get_session(session_id: str, _user: dict = Depends(require_user)):
     if not session:
         raise HTTPException(404, "Session not found.")
     messages = db.get_messages(session_id)
-    return {**session, "messages": messages}
+    document_ids = db.session_document_ids(session_id)
+    return {**session, "messages": messages, "document_ids": document_ids}
 
 
 @router.post("/sessions/{session_id}/documents")

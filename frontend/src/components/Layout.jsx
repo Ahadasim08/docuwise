@@ -1,15 +1,15 @@
-// frontend/src/components/Layout.jsx
-import { useState } from "react";
-import TopBar from "./TopBar";
-import SessionDrawer from "./SessionDrawer";
+import { LogOut, Plus, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import EmptyState from "./EmptyState";
 import ChatView from "./ChatView";
+import DocumentPanel from "./DocumentPanel";
 import { useSessions } from "../hooks/useSessions";
 import { useDocuments } from "../hooks/useDocuments";
 import { apiFetch } from "../api/client";
 
 export default function Layout({ token, currentSessionId, onSessionSelect, onSignOut }) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const { sessions, createSession } = useSessions(token);
   const { documents, uploading, uploadFile, requestSummary } = useDocuments(token);
 
@@ -24,42 +24,102 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
     }
   };
 
-  const currentSession = sessions.find((s) => s.id === currentSessionId);
-
   const handleNewSession = async () => {
     try {
       const s = await createSession("New session");
       onSessionSelect(s.id);
-      setDrawerOpen(false);
     } catch (err) {
-      console.error("createSession failed:", err);
       alert(`Could not create session: ${err.message}`);
     }
   };
 
+  const currentSession = sessions.find((s) => s.id === currentSessionId);
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <TopBar
-        sessionTitle={currentSession?.title || "DocuWise"}
-        onMenuClick={() => setDrawerOpen(true)}
-        onSignOut={onSignOut}
-      />
-      <SessionDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        sessions={sessions}
-        currentSessionId={currentSessionId}
-        onSessionSelect={(id) => { onSessionSelect(id); setDrawerOpen(false); }}
-        onNewSession={handleNewSession}
-        documents={documents}
-        uploading={uploading}
-        onUpload={uploadFile}
-        onRequestSummary={requestSummary}
-        token={token}
-      />
-      <main className="flex-1 flex flex-col">
+    <div className="min-h-screen bg-background flex">
+      {/* Permanent left sidebar */}
+      <aside className="w-64 shrink-0 border-r border-border bg-card flex flex-col">
+        {/* Brand */}
+        <div className="h-11 flex items-center px-4 border-b border-border shrink-0">
+          <span className="text-sm font-semibold text-foreground">DocuWise</span>
+        </div>
+
+        {/* Session list */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-2 py-2">
+            <Button
+              onClick={handleNewSession}
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 mb-2 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              New session
+            </Button>
+            <p className="text-[10px] text-muted-foreground/60 px-2 py-1 uppercase tracking-wider">Sessions</p>
+            <div className="space-y-0.5">
+              {sessions.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => onSessionSelect(s.id)}
+                  className={cn(
+                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
+                    s.id === currentSessionId
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{s.title}</span>
+                </button>
+              ))}
+              {sessions.length === 0 && (
+                <p className="text-xs text-muted-foreground px-2 py-2">No sessions yet</p>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Document panel */}
+          <DocumentPanel
+            documents={documents}
+            uploading={uploading}
+            onUpload={uploadFile}
+            onRequestSummary={requestSummary}
+            token={token}
+          />
+        </div>
+
+        {/* Sign out */}
+        <div className="p-2 border-t border-border shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSignOut}
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Sign out
+          </Button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="h-11 border-b border-border flex items-center px-4 shrink-0">
+          <span className="text-xs font-medium text-foreground/70">
+            {currentSession?.title || "DocuWise"}
+          </span>
+        </header>
         {currentSessionId ? (
-          <ChatView sessionId={currentSessionId} token={token} documents={documents} onUpload={uploadAndAttach} uploading={uploading} />
+          <ChatView
+            sessionId={currentSessionId}
+            token={token}
+            allDocuments={documents}
+            onUpload={uploadAndAttach}
+            uploading={uploading}
+          />
         ) : (
           <EmptyState onNewSession={handleNewSession} />
         )}

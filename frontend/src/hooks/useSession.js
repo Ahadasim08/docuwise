@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 export function useSession(sessionId, token) {
   const [messages, setMessages] = useState([]);
   const [streaming, setStreaming] = useState(false);
+  const [sessionDocumentIds, setSessionDocumentIds] = useState([]);
 
   const fetchSession = useCallback(async () => {
     if (!sessionId || !token) return;
@@ -17,6 +18,7 @@ export function useSession(sessionId, token) {
         citations: m.citations || [],
       }))
     );
+    setSessionDocumentIds(data.document_ids || []);
   }, [sessionId, token]);
 
   useEffect(() => {
@@ -105,5 +107,5 @@ export function useSession(sessionId, token) {
     }
   };
 
-  return { messages, streaming, sendQuestion };
+  return { messages, streaming, sendQuestion, sessionDocumentIds, refreshSession: fetchSession };
 }
