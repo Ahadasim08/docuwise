@@ -1,17 +1,18 @@
-import { LogOut, Plus, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { LogOut, Plus, MessageSquare, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import EmptyState from "./EmptyState";
 import ChatView from "./ChatView";
-import DocumentPanel from "./DocumentPanel";
 import { useSessions } from "../hooks/useSessions";
 import { useDocuments } from "../hooks/useDocuments";
 import { apiFetch } from "../api/client";
 
 export default function Layout({ token, currentSessionId, onSessionSelect, onSignOut }) {
   const { sessions, createSession } = useSessions(token);
-  const { documents, uploading, uploadFile, requestSummary } = useDocuments(token);
+  const { documents, uploading, uploadFile } = useDocuments(token);
+  const [creating, setCreating] = useState(false);
+  const [sessionError, setSessionError] = useState("");
 
   const uploadAndAttach = async (file) => {
     const docId = await uploadFile(file);
@@ -25,11 +26,15 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
   };
 
   const handleNewSession = async () => {
+    setCreating(true);
+    setSessionError("");
     try {
       const s = await createSession("New session");
       onSessionSelect(s.id);
     } catch (err) {
-      alert(`Could not create session: ${err.message}`);
+      setSessionError(err.message || "Failed to create session");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -45,50 +50,47 @@ export default function Layout({ token, currentSessionId, onSessionSelect, onSig
         </div>
 
         {/* Session list */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-2 py-2">
-            <Button
-              onClick={handleNewSession}
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 mb-2 text-muted-foreground hover:text-foreground"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              New session
-            </Button>
-            <p className="text-[10px] text-muted-foreground/60 px-2 py-1 uppercase tracking-wider">Sessions</p>
-            <div className="space-y-0.5">
-              {sessions.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => onSessionSelect(s.id)}
-                  className={cn(
-                    "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
-                    s.id === currentSessionId
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                >
-                  <MessageSquare className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{s.title}</span>
-                </button>
-              ))}
-              {sessions.length === 0 && (
-                <p className="text-xs text-muted-foreground px-2 py-2">No sessions yet</p>
-              )}
-            </div>
+        <div className="flex-1 overflow-y-auto px-2 py-2">
+          <Button
+            onClick={handleNewSession}
+            disabled={creating}
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 mb-1 text-muted-foreground hover:text-foreground"
+          >
+            {creating
+              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              : <Plus className="h-3.5 w-3.5" />}
+            {creating ? "Creating…" : "New session"}
+          </Button>
+
+          {sessionError && (
+            <p className="text-xs text-destructive px-2 mb-2">{sessionError}</p>
+          )}
+
+          <p className="text-[10px] text-muted-foreground/60 px-2 py-1 uppercase tracking-wider">
+            Sessions
+          </p>
+          <div className="space-y-0.5">
+            {sessions.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => onSessionSelect(s.id)}
+                className={cn(
+                  "w-full text-left px-2 py-1.5 rounded-md text-sm flex items-center gap-2 transition-colors",
+                  s.id === currentSessionId
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{s.title}</span>
+              </button>
+            ))}
+            {sessions.length === 0 && !creating && (
+              <p className="text-xs text-muted-foreground px-2 py-2">No sessions yet</p>
+            )}
           </div>
-
-          <Separator />
-
-          {/* Document panel */}
-          <DocumentPanel
-            documents={documents}
-            uploading={uploading}
-            onUpload={uploadFile}
-            onRequestSummary={requestSummary}
-            token={token}
-          />
         </div>
 
         {/* Sign out */}

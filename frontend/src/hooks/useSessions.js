@@ -8,20 +8,20 @@ export function useSessions(token) {
   const fetchSessions = useCallback(async () => {
     if (!token) return;
     const res = await apiFetch("/sessions", {}, token);
-    if (!res.ok) throw new Error(await res.text());
     setSessions(await res.json());
   }, [token]);
 
-  useEffect(() => { fetchSessions(); }, [fetchSessions]);
+  useEffect(() => {
+    fetchSessions().catch(console.error);
+  }, [fetchSessions]);
 
   const createSession = useCallback(async (title = "New session") => {
     const res = await apiFetch("/sessions", {
       method: "POST",
       body: JSON.stringify({ title }),
     }, token);
-    if (!res.ok) throw new Error(await res.text());
     const session = await res.json();
-    await fetchSessions();
+    await fetchSessions().catch(console.error);
     return session;
   }, [token, fetchSessions]);
 
