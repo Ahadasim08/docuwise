@@ -1,16 +1,17 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import CitationChip from "./CitationChip";
 
 export default function AssistantMessage({ content, citations, docMap = {} }) {
+  const prefersReduced = useReducedMotion();
   return (
     <motion.div
       className="flex justify-start"
-      initial={{ opacity: 0, x: -8 }}
+      initial={{ opacity: 0, x: prefersReduced ? 0 : -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: prefersReduced ? 0 : 0.35, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="max-w-[88%] space-y-3">
-        <div className="border-l-2 border-primary/30 pl-4 py-0.5">
+        <div className="py-0.5">
           <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
             {content}
           </p>
