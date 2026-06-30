@@ -46,14 +46,16 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col max-w-3xl mx-auto w-full px-4">
-      <ScrollArea className="flex-1 min-h-0 py-6">
-        <MessageList messages={messages} docMap={docMap} />
-        {streaming && <StreamingIndicator />}
-        <div ref={bottomRef} />
+    <div className="flex-1 min-h-0 flex flex-col">
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="max-w-3xl mx-auto w-full px-4 py-6">
+          <MessageList messages={messages} docMap={docMap} />
+          {streaming && <StreamingIndicator />}
+          <div ref={bottomRef} />
+        </div>
       </ScrollArea>
 
-      <div className="py-4 space-y-2">
+      <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-2">
         {sessionDocs.length > 0 && (
           <div className="flex flex-wrap gap-1.5 px-1">
             {sessionDocs.map((d) => {
@@ -94,5 +96,6 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
         <ChatInput onSend={handleSend} disabled={streaming} onUpload={handleUpload} uploading={uploading} />
       </div>
     </div>
+
   );
 }
