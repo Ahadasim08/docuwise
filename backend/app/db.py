@@ -84,7 +84,7 @@ def insert_chunks(rows: list[dict]) -> None:
 def match_chunks(
     query_embedding: list[float],
     document_ids: list[str],
-    top_k: int = 6,
+    top_k: int = 10,
 ) -> list[dict]:
     """Call the Postgres `match_chunks` RPC and return the top-k results."""
     return (

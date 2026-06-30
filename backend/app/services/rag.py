@@ -25,10 +25,15 @@ def build_prompt(question: str, chunks: list[dict]) -> str:
         f"[Source {i + 1}] {c['content']}" for i, c in enumerate(chunks)
     )
     return (
-        "Answer the question using ONLY the context below. "
-        "If the answer is not in the context, say you don't know.\n\n"
-        f"Context:\n{context}\n\n"
-        f"Question: {question}\n"
+        "You are a helpful document assistant. Answer the user's question based on the provided document excerpts.\n\n"
+        "Guidelines:\n"
+        "- Be thorough and specific — quote or reference details from the sources when useful\n"
+        "- Use markdown formatting (bullet points, bold, headers) to make the answer easy to read\n"
+        "- Synthesize across multiple sources if relevant information appears in more than one\n"
+        "- If the documents don't contain enough information to fully answer, say what you found and note what's missing\n"
+        "- Never invent facts not present in the sources\n\n"
+        f"Document excerpts:\n{context}\n\n"
+        f"Question: {question}\n\n"
         "Answer:"
     )
 
