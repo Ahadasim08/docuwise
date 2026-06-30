@@ -1,10 +1,26 @@
 import { useRef, useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FileText, FileSpreadsheet, File } from "lucide-react";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 import StreamingIndicator from "./StreamingIndicator";
 import { useSession } from "../hooks/useSession";
 import { cn } from "@/lib/utils";
+
+function DocIcon({ ext }) {
+  if (ext === "pdf") return <FileText className="h-3.5 w-3.5 shrink-0" />;
+  if (ext === "csv") return <FileSpreadsheet className="h-3.5 w-3.5 shrink-0" />;
+  return <File className="h-3.5 w-3.5 shrink-0" />;
+}
+
+function shortName(filename) {
+  const max = 22;
+  const dot = filename.lastIndexOf(".");
+  const base = dot > 0 ? filename.slice(0, dot) : filename;
+  const ext = dot > 0 ? filename.slice(dot) : "";
+  if (base.length <= max) return filename;
+  return base.slice(0, max) + "…" + ext;
+}
 
 export default function ChatView({ sessionId, token, allDocuments = [], onUpload, uploading, onRename }) {
   const { messages, streaming, sendQuestion, sessionDocumentIds, refreshSession } = useSession(sessionId, token);
@@ -14,7 +30,6 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
   const sessionDocs = allDocuments.filter((d) => sessionDocumentIds.includes(d.id));
   const docMap = Object.fromEntries(sessionDocs.map((d) => [d.id, d.filename]));
 
-  // Reset selection to all docs whenever attached docs change
   useEffect(() => {
     setSelectedDocIds(sessionDocs.map((d) => d.id));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -36,7 +51,6 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
   };
 
   const handleSend = (question) => {
-    // Auto-rename on first question if session still has default title
     if (messages.length === 0 && onRename) {
       const title = question.length > 48 ? question.slice(0, 45) + "…" : question;
       onRename(title);
@@ -44,6 +58,8 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
     const active = selectedDocIds.length > 0 ? selectedDocIds : sessionDocs.map((d) => d.id);
     sendQuestion(question, active.length > 0 ? active : null);
   };
+
+  const allSelected = selectedDocIds.length === sessionDocs.length;
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
@@ -55,47 +71,60 @@ export default function ChatView({ sessionId, token, allDocuments = [], onUpload
         </div>
       </ScrollArea>
 
-      <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-2">
+      <div className="max-w-3xl mx-auto w-full px-4 py-4 space-y-3">
         {sessionDocs.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 px-1">
-            {sessionDocs.map((d) => {
-              const active = selectedDocIds.includes(d.id);
-              return (
+          <div className="rounded-lg border border-border/60 bg-muted/20 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/40">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Sources · {selectedDocIds.length}/{sessionDocs.length} active
+              </span>
+              {sessionDocs.length > 1 && (
                 <button
-                  key={d.id}
-                  onClick={() => toggleDoc(d.id)}
-                  title={active ? "Click to exclude from search" : "Click to include in search"}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 text-[11px] font-medium rounded-md px-2.5 py-1 border transition-all",
-                    active
-                      ? "text-primary bg-primary/10 border-primary/30 hover:bg-primary/20"
-                      : "text-muted-foreground bg-muted/40 border-border/50 hover:bg-muted line-through decoration-muted-foreground/40"
-                  )}
+                  onClick={() => setSelectedDocIds(allSelected ? [] : sessionDocs.map((d) => d.id))}
+                  className="text-[10px] text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <span className={cn(
-                    "h-1.5 w-1.5 rounded-full shrink-0",
-                    active ? "bg-primary/70" : "bg-muted-foreground/40"
-                  )} />
-                  {d.filename}
+                  {allSelected ? "Deselect all" : "Select all"}
                 </button>
-              );
-            })}
-            {sessionDocs.length > 1 && (
-              <button
-                onClick={() => {
-                  const allSelected = selectedDocIds.length === sessionDocs.length;
-                  setSelectedDocIds(allSelected ? [] : sessionDocs.map((d) => d.id));
-                }}
-                className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-1 transition-colors"
-              >
-                {selectedDocIds.length === sessionDocs.length ? "Deselect all" : "Select all"}
-              </button>
-            )}
+              )}
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 gap-px bg-border/30">
+              {sessionDocs.map((d) => {
+                const active = selectedDocIds.includes(d.id);
+                const ext = d.filename.split(".").pop()?.toLowerCase() ?? "";
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => toggleDoc(d.id)}
+                    title={d.filename}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 text-left transition-colors",
+                      active
+                        ? "bg-card text-foreground hover:bg-primary/5"
+                        : "bg-muted/40 text-muted-foreground/50 hover:bg-muted/60"
+                    )}
+                  >
+                    <span className={cn("shrink-0", active ? "text-primary" : "text-muted-foreground/30")}>
+                      <DocIcon ext={ext} />
+                    </span>
+                    <span className={cn("text-[11px] font-medium truncate", !active && "line-through decoration-muted-foreground/30")}>
+                      {shortName(d.filename)}
+                    </span>
+                    <span className={cn(
+                      "ml-auto h-1.5 w-1.5 rounded-full shrink-0",
+                      active ? "bg-primary" : "bg-muted-foreground/20"
+                    )} />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
+
         <ChatInput onSend={handleSend} disabled={streaming} onUpload={handleUpload} uploading={uploading} />
       </div>
     </div>
-
   );
 }
